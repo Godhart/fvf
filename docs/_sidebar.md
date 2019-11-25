@@ -1,3 +1,2 @@
-<!-- docs/_sidebar.md -->
-
 * [Home](/)
+* [Russian docs](ru/)

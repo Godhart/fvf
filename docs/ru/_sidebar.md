@@ -1,5 +1,3 @@
-<!-- docs/_sidebar.md -->
-
 * [Начальная страница](/)
 * [Вступление](d1_intro.md)
 * [Структура фреймворка](d2_framework_structure.md)
