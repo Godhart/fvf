@@ -16,8 +16,11 @@
     <div id="app"></div>
     <script>
         window.$docsify = {
-          loadSidebar: true
-          coverpage: true
+          loadSidebar: true,
+          coverpage: {
+            '/': '_coverpage.md',
+            '/ru/': '_coverpage.md'
+          }
         }
     </script>
     <script src="//unpkg.com/docsify/lib/docsify.min.js"></script>
