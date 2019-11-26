@@ -1,2 +1,2 @@
 * [Home](/)
-* [Russian docs](ru/)
+* [Russian docs](/ru/)
