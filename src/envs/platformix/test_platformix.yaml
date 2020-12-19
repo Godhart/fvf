@@ -1,0 +1,60 @@
+test_env:
+  - name: "Platformix core test environment"  # something to distinguish platform and units setup
+    # TODO: include support
+
+    generics:
+      tag_default: "tag set by generic"
+      enable_generate: False  # When True then lot of platforms generated, otherwise only base set is used
+
+      # Generics to be used in generate iterators
+      generate_range1_end: 3
+      generate_range2_start: "$e{${generate_range1_end}+5}"  # NOTE: that one generic is extrapolated value
+      # It depends not only on expression but on another test's generic too
+
+    platforms:
+      platformix:
+      # NOTE: order of platform is like this on purpose (to make sure that dependencies don't affect result)
+        - name: "platform_pb1_wc1"
+          wait: "platform_c1"
+          platform: "platform_b"
+
+        - name: "platform_c2"
+          platform: "platform_a"
+
+        - name: "platform_a"
+
+        - name: "platform_b"
+
+        - name: "platform_c1"
+          platform: "platform_a"
+
+        - name: "platform_wc2"
+          wait: "platform_c2"
+
+      # Following section is used to show power of generators
+      generate:
+          iterator: "('x1', 'x2', 'x3')"  # Iterator is python expression returning iterable object
+          iterator_name: "a"
+          platforms:
+            platformix:
+              - name: "generated_from_list_1_${a}"
+                tag: "${tag_default} with generated value ${a}"
+                condition: "${enable_generate}"
+              - name: "generated_from_list_2_${a}"
+                tag: "copied: ${generated_from_list_1_${a}.tag}"  # You can refer to generics of other platforms in extrapolation expression
+                condition: "${enable_generate}"
+            generate:
+              - iterator: "range(0, ${generate_range1_end})"  # Iterators can be extrapolated (but using test's generics only)
+                iterator_name: "b"
+                platforms:
+                  platformix:
+                    name: "generated_matrix_${a}:${b}"
+                    tag: "generated tag with eval over it: $e{'${a}'*${b}}"
+                    condition: "${enable_generate}"
+              - iterator: "range(${generate_range2_start}, $e{${generate_range2_start}+2})" # Expression can be used too for iterators extrapolation
+                iterator_name: "b"
+                platforms:
+                  platformix:
+                    name: "generated_matrix_${a}:${b}"
+                    tag: "generated tag with eval over it: $e{'${a}'*${b}}"
+                    condition: "${enable_generate}"

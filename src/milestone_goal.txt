@@ -1,0 +1,38 @@
++ Потоки, контроль выполнения send_message
++ Оставшиеся тесты platformix
++ Оставшиеся тесты calc (real calc app)
++ убрать message receiver
++ Тест с TCPIO
++ проверять ScoreBoards
++ remove wait_request_complete
++ general_io => stream_io
++ Generics, Expressions, Attributes Access
++ Condition
++ Eval Sandbox
++ Generate
+Описание
+класс TestEnv -> core
+метод alias_property
+метод alias_method
+QuickStart guide
+Подумать, как обеспечить импорт модулей и тестов из внешних каталогов?
+* вариант создавать симлинки на время теста
+** создавать "песочницу" (желательно) !!!
+** создавать прямо во фреймворке
+** что есть стандартного для этого в Python? чтобы и разработка была простой?
+- использовать git trees?
+- использовать рядом стоящие каталоги?
+Avoid escaped $ in regexes, unescape $ after extrapolation 
+Host ping on start
+Include
+Менять cwd на время работы теста на временный каталог
+assertions on uncoverd code ?
+arth test: assertions => if ?
+UML output (before extrapolation, after, messaging)
+Лицензия
+start_stop = True
+Тест с FIFO
+Probe example
+AutoDiscover в платформе Host
+message_io
+

@@ -1,0 +1,40 @@
+test_env:
+  - name: "Example environment for Calc app test with predefined tests set"
+    # TODO: include support
+
+    generics: #list of generics that could be used in platform/units setup
+      calc_host: "127.0.0.1" # Host IP address. ${calc_host} or ${generics.calc_host} in string params would be replaced with "127.0.0.1"
+      app_runner_port: 53575 # Listening port for software runner
+      calc_app_port: 30001   # Listening port for calc app
+      stdio: 0  # 0 for interaction via tcpio, 1 for interaction via softwarerunner and it's stdio
+
+    host:  # Represents any host on network
+      - name: "calc_host"
+        host: "${calc_host}"
+
+    software_runner: # Represents server that runs misc software
+      - name: "calc_app"
+        platform: "calc_host"
+        port: "${app_runner_port}"
+        # service: "calc"  # TODO: use service instead of port
+        args: # List of additional args to app
+          - "${calc_app_port}"
+          - "${stdio}"
+        cmd_on_stop:
+          - "exit"
+
+    tcpio:
+      - condition: "$e{[True, False][${stdio}]}"
+        name: "calc_tcpio"
+        platform: "calc_host"
+        wait:
+          - "calc_app"  # NOTE: on stop it waits for calc too but should be opposite
+        port: "${calc_app.args[0]}"
+        timeout: 0.01
+        send_on_stop:
+          - "exit"
+
+    calc: # Example calc app
+      - name: "calc_if"
+        platform: "$e{['calc_tcpio', 'calc_app'][${stdio}]}"
+        io_interface: "$e{['stream_io', 'softwarerunner'][${stdio}]}"

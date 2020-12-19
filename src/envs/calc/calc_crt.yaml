@@ -1,0 +1,83 @@
+test_env:
+  - name: "Example environment for Calc app test with formal methods approach (prototype)."
+    # TODO: include support
+
+    generics: #list of generics that could be used in platform/units setup
+      calc_host: "127.0.0.1" # Host IP address. ${calc_host} or ${generics.calc_host} in string params would be replaced with "127.0.0.1"
+      app_runner_port: 53575 # Listening port for software runner
+      calc_app_port: 30001   # Listening port for calc app
+      stdio: 0  # 0 for interaction via tcpio, 1 for interaction via softwarerunner and it's stdio
+
+    host:  # Represents any host on network
+      - name: "calc_host"
+        host: "${calc_host}"
+
+    software_runner: # Represents server that runs misc software
+      - name: "calc_app"
+        platform: "calc_host"
+        port: "${app_runner_port}"
+        # service: "calc"  # TODO: use service instead of port
+        args: # List of additional args to app
+          - "${calc_app_port}"
+          - "${stdio}"
+        cmd_on_stop:
+          - "exit"
+
+    tcpio:
+      - condition: "$e{[True, False][${stdio}]}"
+        name: "calc_tcpio"
+        platform: "calc_host"
+        wait:
+          - "calc_app"
+        port: "${calc_app.args[0]}"
+        timeout: 0.01
+        send_on_stop:
+          - "exit"
+
+    calc: # Example calc app
+      - name: "calc_if"
+        platform: "$e{['calc_tcpio', 'calc_app'][${stdio}]}"
+        io_interface: "$e{['stream_io', 'softwarerunner'][${stdio}]}"
+        # coverage: # TODO: if defined then coverage would be automatically instantiated using "@calc_if" as channel
+        #   - interface: arith      # Interface to set coverage on
+        #     rule:  coverage_arith_all         # Coverage rule
+        # scoreboard: # TODO: if defined then scoreboard would be automatically instantiated using "@calc_if" as cmd/response channel
+        #   - interface: arith      # Scoreboard rule
+        #     rule: scoreboard_arith_common     # Scoreboard checking rule
+
+    sequencer: # Generates requests sequences
+      - name: "calc_seq"
+        platform: "calc_if"  # If there is no channel in expression then requests are sent to this platform
+        expr: "['arith', ['sum','sub','mult','div','power'][rand(1).randint(0,4)], rand(2).randint(-99,99), rand(3).randint(-99,99)]"
+          # A request template to host platform. An array with following items:
+          #  * 1 - channel. If omitted then request is sent to parent platform
+          #  * 2 - interface name
+          #  * 3 - method name
+          #  * 4: - args to method
+        runs: 10  # Sequencer would produce that amount of requests if run is called without args
+
+    # TODO: example in which sequencer that rules other sequencers
+
+    scoreboard: # Ensures that arith interface is implemented as required
+      - name: "calc_sb"  # TODO: probably better to explicitly declare as calc's subplatform
+                         #  or even instantiate it automatically or with small hint
+        # NOTE: platform isn't specified, it depends on talk channels only
+        rules: "ip.arith.scoreboard_arith_all"  # Rule checker implementation
+        cmd:
+          channel: "@calc_if" # Channel with commands sequences
+          interface: "arith"
+        res:
+          channel: "@calc_if" # Channel with responses to commands
+          interface: "arith"
+          # NOTE: sender may be specified if necessary
+
+#    coverage: # Gathers functional coverage statistics
+#      - name: "calc_coverage" # TODO: probably better to explicitly declare as calc's subplatform
+#                              #  or even instantiate it automatically or with small hint
+#        # NOTE: platform isn't specified, it depends on talk channels only
+#        channel: "@calc_if" # Channel to listen to for coverage gathering
+#        interface: "arith"  # Interface to listen to for coverage gathering  # TODO: use default interface name
+#        rules: "ip.arith.coverage_arith_all"  # Coverage rules - sets of values and transitions
+#        when_complete: # If set then message is fired onto specified channel when 100% coverage is reached
+#                       # so test could be stopped before specified amount of sequence gen cycles made
+#          '__root__': "['report', 'coverage', [], {'success': True, 'subject': 'calc_app'}]"

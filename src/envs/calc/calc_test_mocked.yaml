@@ -1,0 +1,6 @@
+test_env:
+  - name: "Example environment for Calc app test with predefined tests set. Mocked platform is used to simplify example"
+
+    calc: # Example calc app
+      - name: "calc_if"
+        mock: 1 # NOTE: mock is turned on so no other platforms required to perform calc functions
